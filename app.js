@@ -1,4 +1,5 @@
 // pkg imports
+const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
@@ -6,11 +7,13 @@ const mongoose = require('mongoose')
 // local imports
 const feedRoutes = require('./routes/feed')
 
-const MONGODB_URI = 'mongodb+srv://aliraza:aliraza@cluster0.g6cnw.mongodb.net/onlineshop'
+const MONGODB_URI = 'mongodb+srv://aliraza:aliraza@cluster0.g6cnw.mongodb.net/apimessaging'
+
 
 const app = express()
 
 app.use(bodyParser.json())
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Orign', '*')
