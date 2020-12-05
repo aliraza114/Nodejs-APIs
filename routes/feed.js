@@ -11,11 +11,17 @@ const router = express.Router()
 router.get('/posts', feedController.getPosts)
 // creating a post
 router.post('/post', [
-    body('title').trim().isLength({min: 5}),
-    body('content').trim().isLength({min: 5}),
+    body('title').trim().isLength({ min: 5 }),
+    body('content').trim().isLength({ min: 5 }),
 ], feedController.createPost)
 
+// for getting single post data
+router.get('/post/:postId', feedController.getPost)
 
-router.get('/post/:postId', )
+//for updating the post data
+router.put('/post/:postId', [
+    body('title').trim().isLength({ min: 5 }),
+    body('content').trim().isLength({ min: 5 }),
+], feedController.updatePost)
 
 module.exports = router
