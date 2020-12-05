@@ -25,6 +25,16 @@ app.use((req, res, next) => {
 //registering routes
 app.use('/feed', feedRoutes)
 
+// general error handling 
+app.use((err, req, res, next) =>{
+    console.log(err)
+    const status = err.statusCode || 500
+    const message = err.statusCode
+    res.status(status).json({
+        message: message
+    })
+})
+
 mongoose.connect(MONGODB_URI).then(
     app.listen(8080)
 ).catch(err => console.log(err))
