@@ -7,6 +7,7 @@ const multer = require('multer')
 
 // local imports
 const feedRoutes = require('./routes/feed')
+const authRoutes = require('./routes/auth')
 
 const MONGODB_URI = 'mongodb+srv://aliraza:aliraza@cluster0.g6cnw.mongodb.net/apimessaging'
 
@@ -45,14 +46,16 @@ app.use((req, res, next) => {
 
 //registering routes
 app.use('/feed', feedRoutes)
+app.use('/auth', authRoutes)
 
 // general error handling 
 app.use((err, req, res, next) =>{
     console.log(err)
     const status = err.statusCode || 500
     const message = err.statusCode
+    const data = error.data
     res.status(status).json({
-        message: message
+        message: message, data: data
     })
 })
 
