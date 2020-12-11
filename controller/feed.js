@@ -5,6 +5,7 @@ const path = require('path')
 const { validationResult } = require('express-validator/check')
 
 // local imports
+const io = require('../socket')
 const Post = require('../models/post')
 const User = require('../models/user')
 
@@ -17,8 +18,9 @@ exports.getPosts = (req, res, next) => {
     let totalItems
     Post.find().countDocuments().then(count => {
         totalItems = count
-        return Post.find().skip((currentPage - 1) * perPage).limit(perPage)
+        return Post.find().populate('creator').sort({cretedAt: -1}).skip((currentPage - 1) * perPage).limit(perPage)
     }).then(posts => {
+        io.getIO().emit('posts', { action: 'create', post: { ...posts._doc, creator: { _id: req.userId, name: user.name } } })
         res.status(200).json({ message: 'Post Fetched Successfully!', posts: posts, totalItems: totalItems })
     })
         .catch(err => {
@@ -60,19 +62,19 @@ exports.createPost = ((req, res, next) => {
         user.posts.push(post)
         return user.save()
     })
-    .then(result =>{
-        res.status(201).json({
-            message: 'Post Created Successflly',
-            posts: post,
-            creator: {_id: creator._id, name: creator.name }
+        .then(result => {
+            res.status(201).json({
+                message: 'Post Created Successflly',
+                posts: post,
+                creator: { _id: creator._id, name: creator.name }
+            })
         })
-    })
-    .catch(err => {
-        if (!err.statusCode) {
-            err.statusCode = 500
-        }
-        next(err)
-    })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500
+            }
+            next(err)
+        })
 })
 
 exports.getPost = (req, res, next) => {
@@ -112,13 +114,13 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 422
         throw error
     }
-    Post.findById(postId).then(post => {
+    Post.findById(postId).populate('creator').then(post => {
         if (!post) {
             const error = new Error('Could not find post!')
             error.statusCode = 404
             throw error
         }
-        if(post.creator.toString() !== req.userId){
+        if (post.creator_id.toString() !== req.userId) {
             const error = new Error('Not Authorized!')
             error.statusCode = 403
             throw error
@@ -130,6 +132,7 @@ exports.updatePost = (req, res, next) => {
         post.content = content
         post.imageUrl = imageUrl
         return post.save()
+        io.getIO().emit('posts', {action: 'update', post: result})
     }).then(result => {
         res.statusCode(200).json({ message: 'Post Updated!', post: result })
     })
@@ -151,7 +154,7 @@ exports.deletePost = (req, res, next) => {
                 throw error
             }
         }
-        if(post.creator.toString() !== req.userId){
+        if (post.creator.toString() !== req.userId) {
             const error = new Error('Not Authorized!')
             error.statusCode = 403
             throw error
@@ -161,19 +164,20 @@ exports.deletePost = (req, res, next) => {
     }).then(result => {
         return Post.findById(req.userId)
     })
-    .then(user =>{
-        user.posts.pull(postId)
-        return user.save()
-    })
-    .then(result =>{
-        res.status(200).json({ message: 'Deleted Post' })
-    })
-    .catch(err => {
-        if (!err.statusCode) {
-            err.statusCode = 500
-        }
-        next(err)
-    })
+        .then(user => {
+            user.posts.pull(postId)
+            return user.save()
+            io.getIO().emit('posts', {action: 'delete', post: postId} )
+        })
+        .then(result => {
+            res.status(200).json({ message: 'Deleted Post' })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500
+            }
+            next(err)
+        })
 }
 
 const clearImage = filePath => {

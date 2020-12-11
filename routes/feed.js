@@ -1,30 +1,45 @@
-// pkg imports
-const express = require('express')
-const { body } = require('express-validator/check')
+const express = require('express');
+const { body } = require('express-validator/check');
 
+const feedController = require('../controllers/feed');
+const isAuth = require('../middleware/is-auth');
 
-// local imports
-const feedController = require('../controller/feed')
-const isAuth = require('../middleware/is-auth')
+const router = express.Router();
 
-const router = express.Router()
-// getting all posts
-router.get('/posts', isAuth, feedController.getPosts)
-// creating a post
-router.post('/post', isAuth , [
-    body('title').trim().isLength({ min: 5 }),
-    body('content').trim().isLength({ min: 5 }),
-], feedController.createPost)
+// GET /feed/posts
+router.get('/posts', isAuth, feedController.getPosts);
 
-// for getting single post data
-router.get('/post/:postId', isAuth,  feedController.getPost)
+// POST /feed/post
+router.post(
+  '/post',
+  isAuth,
+  [
+    body('title')
+      .trim()
+      .isLength({ min: 5 }),
+    body('content')
+      .trim()
+      .isLength({ min: 5 })
+  ],
+  feedController.createPost
+);
 
-//for updating the post data
-router.put('/post/:postId', isAuth,  [
-    body('title').trim().isLength({ min: 5 }),
-    body('content').trim().isLength({ min: 5 }),
-], feedController.updatePost)
+router.get('/post/:postId', isAuth, feedController.getPost);
 
-router.delete('/post/:postId', isAuth, feedController.deletePost)
+router.put(
+  '/post/:postId',
+  isAuth,
+  [
+    body('title')
+      .trim()
+      .isLength({ min: 5 }),
+    body('content')
+      .trim()
+      .isLength({ min: 5 })
+  ],
+  feedController.updatePost
+);
 
-module.exports = router
+router.delete('/post/:postId', isAuth, feedController.deletePost);
+
+module.exports = router;
