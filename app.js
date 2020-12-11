@@ -1,12 +1,16 @@
+// node import
 const path = require('path')
+// packages import
 
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const multer = require('multer')
+const graphHttp = require('express-graphql')
 
-const feedRoutes = require('./routes/feed')
-const authRoutes = require('./routes/auth')
+// local import 
+const schema = require('./graphql/schema')
+const resolver = require('./graphql/resolver')
 
 const app = express()
 
@@ -48,8 +52,10 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use('/feed', feedRoutes)
-app.use('/auth', authRoutes)
+app.use('/graphql', graphHttp({
+  schema: schema,
+  rootValue: resolver
+}))
 
 app.use((error, req, res, next) => {
   console.log(error)
