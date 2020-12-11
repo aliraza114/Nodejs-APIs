@@ -1,11 +1,11 @@
-const express = require('express');
-const { body } = require('express-validator/check');
+const express = require('express')
+const { body } = require('express-validator/check')
 
-const User = require('../models/user');
-const authController = require('../controllers/auth');
-const isAuth = require('../middleware/is-auth');
+const User = require('../models/user')
+const authController = require('../controllers/auth')
+const isAuth = require('../middleware/is-auth')
 
-const router = express.Router();
+const router = express.Router()
 
 router.put(
   '/signup',
@@ -16,9 +16,9 @@ router.put(
       .custom((value, { req }) => {
         return User.findOne({ email: value }).then(userDoc => {
           if (userDoc) {
-            return Promise.reject('E-Mail address already exists!');
+            return Promise.reject('E-Mail address already exists!')
           }
-        });
+        })
       })
       .normalizeEmail(),
     body('password')
@@ -30,11 +30,11 @@ router.put(
       .isEmpty()
   ],
   authController.signup
-);
+)
 
-router.post('/login', authController.login);
+router.post('/login', authController.login)
 
-router.get('/status', isAuth, authController.getUserStatus);
+router.get('/status', isAuth, authController.getUserStatus)
 
 router.patch(
   '/status',
@@ -46,6 +46,6 @@ router.patch(
       .isEmpty()
   ],
   authController.updateUserStatus
-);
+)
 
-module.exports = router;
+module.exports = router
