@@ -34,5 +34,14 @@ module.exports = {
         })
         const createdUser = await user.save()
         return { ...createdUser._doc, _id: createdUser._id.toString() }
+    },
+
+    login: async function({email, password}) {
+        const user = await User.findOne({email: email})
+        if(!user){
+            const error = new Error('User not found!')
+            error.code = 401
+            throw error
+        }
     }
 }
