@@ -11,6 +11,7 @@ const graphHttp = require('express-graphql')
 // local import 
 const schema = require('./graphql/schema')
 const resolver = require('./graphql/resolver')
+const auth = require('./middleware/auth')
 
 const app = express()
 
@@ -54,6 +55,8 @@ app.use((req, res, next) => {
   }
   next()
 })
+
+app.use(auth)
 
 app.use('/graphql', graphHttp({
   schema: schema,
